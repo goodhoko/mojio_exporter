@@ -1,3 +1,4 @@
 /target
 .DS_Store
 ride_history.geojson
+.env

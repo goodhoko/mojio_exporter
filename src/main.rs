@@ -1,10 +1,6 @@
 use geojson::FeatureCollection;
 use serde::Deserialize;
-use std::{fs::write, str};
-
-const API_TOKEN: &str = todo!();
-const VEHICLE_ID: &str = todo!();
-const OUTPUT_FILE: &str = "ride_history.geojson";
+use std::{env, fs::write, str};
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "PascalCase")]
@@ -19,17 +15,23 @@ struct RideHistory {
 }
 
 fn main() {
-    let history = fetch_history();
+    let api_token = env::var("MOJIO_TOKEN")
+        .expect("Please, provide a Mojio API token via the MOJIO_TOKEN environment variable");
+    let vehicle_id = env::var("MOJIO_VEHICLE_ID")
+        .expect("Please, provide ID of the vehicle via the MOJIO_VEHICLE_ID environment variable");
+    let output_file = env::var("OUTPUT_FILE").unwrap_or("ride_history.geojson".to_string());
+
+    let history = fetch_history(&api_token, &vehicle_id);
     println!("History fetched.");
     let features = decode_history(history);
     println!("History decoded.");
-    write_geojson(features, OUTPUT_FILE);
-    println!("History written to {OUTPUT_FILE}.")
+    write_geojson(features, &output_file);
+    println!("History written to {output_file}.")
 }
 
-fn fetch_history() -> RideHistory {
+fn fetch_history(api_token: &str, vehicle_id: &str) -> RideHistory {
     ureq::get(&format!(
-        "https://tmobile-cz-api.moj.io/v2/vehicles/{VEHICLE_ID}/trips"
+        "https://tmobile-cz-api.moj.io/v2/vehicles/{vehicle_id}/trips"
     ))
     .query_pairs([
         // TODO: Paginate until end.
@@ -37,7 +39,7 @@ fn fetch_history() -> RideHistory {
         ("skip", "0"),
         ("orderby", "StartTimestamp asc"),
     ])
-    .set("Authorization", &format!("Bearer {API_TOKEN}"))
+    .set("Authorization", &format!("Bearer {api_token}"))
     .call()
     .expect("Failed to fetch ride history")
     .into_json()
