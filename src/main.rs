@@ -39,9 +39,9 @@ fn fetch_history() -> RideHistory {
     ])
     .set("Authorization", &format!("Bearer {API_TOKEN}"))
     .call()
-    .expect("Failed to fetch ride history.")
+    .expect("Failed to fetch ride history")
     .into_json()
-    .expect("Could not parse Ride history response.")
+    .expect("Could not parse Ride history response")
 }
 
 fn decode_history(history: RideHistory) -> FeatureCollection {
@@ -61,5 +61,5 @@ fn decode_history(history: RideHistory) -> FeatureCollection {
 }
 
 fn write_geojson(features: FeatureCollection, file: &str) {
-    write(file, &features.to_string()).expect("Could not write to output file.");
+    write(file, &features.to_string()).expect("Could not write to output file");
 }
